@@ -1,5 +1,6 @@
 package lab3.utem.my.mydailyexpenses;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
@@ -12,8 +13,8 @@ public class ExpensesDB extends SQLiteOpenHelper {
 
     public static final String dbName = "dbMyExpense";
     public static final String tblName = "expenses";
-    public static final String colExpName = "expenses_name";
-    public static final String colExpPrice = "expenses_price";
+    public static final String colExpName = "exp_name";
+    public static final String colExpPrice = "exp_price";
     public static final String colExpDate = "exp_date";
     public static final String colExpId = "exp_id";
 
@@ -42,12 +43,17 @@ public class ExpensesDB extends SQLiteOpenHelper {
         return curr;
     }
 
+    public void update(ContentValues cv, String id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        db.update(tblName, cv, "exp_id=" + id, null);
+    }
+
     public void fnExecuteSql(String sql, Context context) {
         try {
             SQLiteDatabase db = this.getReadableDatabase();
             db.execSQL(sql);
         } catch (Exception ex) {
-            Log.d("Unable to run query", "ERROR!");
+            Log.d("fnExecuteSQL", ex.getMessage());
         }
     }
 

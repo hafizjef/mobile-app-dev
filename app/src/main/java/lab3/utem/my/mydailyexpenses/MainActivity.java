@@ -2,11 +2,8 @@ package lab3.utem.my.mydailyexpenses;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.Settings;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,7 +17,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -134,12 +130,21 @@ public class MainActivity extends AppCompatActivity {
             case R.id.viewExp:
                 fnActivExpList(this.getCurrentFocus());
                 return true;
+
+            case R.id.listViewExpense:
+                fnListViewExp(this.getCurrentFocus());
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    private void fnListViewExp(View currentFocus) {
+        Intent intent = new Intent(this, ListViewExpensesActivity.class);
+        startActivityForResult(intent, 0);
     }
 
     public void fnActivExpList(View vw) {
@@ -152,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-
+                String strRespond = "";
 
                 if (expName.getText().toString().matches("") || expDate.getText().toString().matches("") || expPrice.getText().toString().matches("")) {
                     runOnUiThread(new Runnable() {
@@ -163,10 +168,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 } else {
-
                     String strExpName = expName.getText().toString();
                     Double strPrice = Double.parseDouble(expPrice.getText().toString());
                     String strDate = expDate.getText().toString();
+                    String timeStr = expTime.getText().toString();
 
                     int intNewId = dbMyExpenses.fnTotalRow() + 1;
                     String strQry = "INSERT INTO expenses values('" +
@@ -174,10 +179,26 @@ public class MainActivity extends AppCompatActivity {
 
                     dbMyExpenses.fnExecuteSql(strQry, getApplicationContext());
 
+                    List<NameValuePair> params = new ArrayList<>();
+                    params.add(new BasicNameValuePair("selectFn", "fnAddExpense"));
+                    params.add(new BasicNameValuePair("varExpName", strExpName));
+                    params.add(new BasicNameValuePair("varExpPrice", strPrice.toString()));
+                    params.add(new BasicNameValuePair("varMobileDate", strDate));
+                    params.add(new BasicNameValuePair("varMobileTime", timeStr));
+
+                    try {
+                        jsonObject = wsc.makeHTTPRequest(wsc.fnGetURL(), "POST", params);
+                        strRespond = jsonObject.getString("respond");
+                    } catch (Exception ex) {
+                        Log.d("JSON Call Err", ex.getMessage());
+                    }
+
+                    final String finalStrRespond = strRespond;
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast showSuccess = Toast.makeText(getApplicationContext(), "Information successfully saved",
+                            Toast showSuccess = Toast.makeText(getApplicationContext(), "Information successfully saved" + finalStrRespond,
                                     Toast.LENGTH_SHORT);
                             showSuccess.show();
                         }

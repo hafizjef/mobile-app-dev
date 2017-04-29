@@ -1,6 +1,8 @@
 package lab3.utem.my.mydailyexpenses;
 
 
+import android.util.Log;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -42,20 +44,23 @@ public class WebServiceCall {
                 HttpResponse httpResponse = httpClient.execute(httpPost);
                 HttpEntity httpEntity = httpResponse.getEntity();
                 is = httpEntity.getContent();
+                Log.d("TAG", is.toString());
             }
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "utf-8"), 8);
             StringBuilder sb = new StringBuilder();
             String line = null;
             while((line = reader.readLine()) != null) {
                 sb.append(line+"\n");
             }
             is.close();
+            Log.d("SBSTR", sb.toString());
             json = sb.toString();
             jObj = new JSONObject(json);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        Log.d("TAG", jObj.toString());
         return jObj;
     }
 }
